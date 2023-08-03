@@ -1,4 +1,4 @@
-# Docker training
+# Backend quick payment
 ## Reasons to use Docker
 - Docker is a containerization platform that allows you to create isolated environments to run your applications.
 - Docker is a tool that allows you to deploy applications inside of software containers.
