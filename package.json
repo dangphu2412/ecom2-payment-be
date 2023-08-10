@@ -35,6 +35,7 @@
     "express": "^4.18.2",
     "fastify": "^4.21.0",
     "fastify-plugin": "^4.5.1",
+    "google-auth-library": "^9.0.0",
     "jsonwebtoken": "^9.0.1",
     "prisma": "^5.1.1"
   },

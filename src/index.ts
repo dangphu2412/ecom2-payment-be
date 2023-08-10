@@ -3,13 +3,11 @@ import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import { authPlugin } from './modules/auth';
 const fastifyEnv = require('@fastify/env')
-import { OAuth2Namespace } from "@fastify/oauth2";
 import {databasePlugin} from "./modules/externals/database/database-client";
 import {PrismaClient} from "@prisma/client";
 
 declare module 'fastify' {
     interface FastifyInstance  {
-        googleOAuth2: OAuth2Namespace;
         config: {
             PORT: string;
             CLIENT_ID: string;
@@ -47,6 +45,7 @@ async function bootstrap() {
             }
         },
     });
+    server.register(async () => {}, {prefix: '/api'})
     server.register(cors);
     server.register(helmet);
     server.register(authPlugin)
