@@ -1,9 +1,11 @@
 import fastify from 'fastify';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
-import { registerAuthModule } from './modules/auth';
+import { authPlugin } from './modules/auth';
 const fastifyEnv = require('@fastify/env')
 import { OAuth2Namespace } from "@fastify/oauth2";
+import {databasePlugin} from "./modules/externals/database/database-client";
+import {PrismaClient} from "@prisma/client";
 
 declare module 'fastify' {
     interface FastifyInstance  {
@@ -12,7 +14,9 @@ declare module 'fastify' {
             PORT: string;
             CLIENT_ID: string;
             CLIENT_SECRET: string;
+            ACCESS_TOKEN_SECRET: string;
         }
+        databaseUnitOfWork: PrismaClient;
     }
 }
 
@@ -37,16 +41,20 @@ async function bootstrap() {
                 CLIENT_ID: {
                     type: 'string'
                 },
+                ACCESS_TOKEN_SECRET: {
+                    type: 'string'
+                }
             }
         },
     });
     server.register(cors);
     server.register(helmet);
-    server.register(registerAuthModule)
+    server.register(authPlugin)
+    server.register(databasePlugin)
 
     try {
         await server.ready();
-        await server.listen({ port: +server.config.PORT, host: '127.0.0.1' });
+        await server.listen({ port: +server.config.PORT });
     } catch(err) {
         server.log.error(err);
         process.exit(1);

@@ -1,23 +1,10 @@
-import { FastifyPluginCallback } from 'fastify/types/plugin'
 import oauthPlugin from "@fastify/oauth2";
+import fastifyPlugin from "fastify-plugin";
 import jwt from 'jsonwebtoken';
-export interface User {
-  iss: string
-  azp: string
-  aud: string
-  sub: string
-  email: string
-  email_verified: boolean
-  at_hash: string
-  name: string
-  picture: string
-  given_name: string
-  family_name: string
-  locale: string
-  iat: number
-  exp: number
-}
-export const registerAuthModule: FastifyPluginCallback = async (fastify, options) => {
+import {User} from "./auth.models";
+
+
+export const authPlugin  = fastifyPlugin(async (fastify) => {
   fastify.register(oauthPlugin, {
     name: 'googleOAuth2',
     scope: ['profile', 'email'],
@@ -42,10 +29,32 @@ export const registerAuthModule: FastifyPluginCallback = async (fastify, options
       })
     }
 
-    const user  = jwt.decode(id_token) as User;
+    const { email, name: fullName }  = jwt.decode(id_token) as User;
+
+    const user = await fastify.databaseUnitOfWork.user.findFirst({
+      cursor: {
+        email,
+      }
+    });
+
+    if (!user) {
+      const {id: insertedId} = await fastify.databaseUnitOfWork.user.create({
+        data: {
+          email,
+          fullName,
+        }
+      })
+      const accessToken = jwt.sign({ id: insertedId }, fastify.config.ACCESS_TOKEN_SECRET);
+
+      return reply.status(200).send({
+        accessToken
+      })
+    }
+
+    const newAccessToken = jwt.sign({ id: user.id }, fastify.config.ACCESS_TOKEN_SECRET);
 
     return reply.status(200).send({
-      user
+      accessToken: newAccessToken
     })
   });
-}
+})
