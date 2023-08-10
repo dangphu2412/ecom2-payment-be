@@ -1,6 +1,5 @@
-import { PrismaClient } from '@prisma/client'
-import fastifyPlugin from 'fastify-plugin'
-
+import { PrismaClient } from '@prisma/client';
+import fastifyPlugin from 'fastify-plugin';
 
 export const databasePlugin = fastifyPlugin(async (fastify) => {
   const prisma = new PrismaClient();
@@ -9,4 +8,4 @@ export const databasePlugin = fastifyPlugin(async (fastify) => {
 
   fastify.log.info('Connected to the database');
   fastify.decorate('databaseUnitOfWork', prisma);
-})
+});
