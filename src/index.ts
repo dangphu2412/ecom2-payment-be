@@ -3,8 +3,11 @@ import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import { fastifyEnv } from '@fastify/env';
 import { PrismaClient } from '@prisma/client';
+import { transactionPlugin } from './modules/transaction';
 import { authPlugin } from './modules/auth';
-import { databasePlugin } from './modules/externals/database/database-client';
+import { userPlugin } from './modules/users';
+import { databasePlugin } from './configs/database/database-client';
+import { JWT } from '@fastify/jwt';
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -14,7 +17,9 @@ declare module 'fastify' {
       CLIENT_SECRET: string;
       ACCESS_TOKEN_SECRET: string;
     };
-    databaseUnitOfWork: PrismaClient;
+    uow: PrismaClient;
+    jwt: JWT,
+    authenticate: any
   }
 }
 
@@ -44,10 +49,11 @@ async function bootstrap() {
       },
     },
   });
-  server.register(async () => {}, { prefix: '/api' });
   server.register(cors);
   server.register(helmet);
   server.register(authPlugin);
+  server.register(userPlugin);
+  server.register(transactionPlugin);
   server.register(databasePlugin);
 
   try {

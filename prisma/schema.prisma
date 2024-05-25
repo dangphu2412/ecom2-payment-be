@@ -12,21 +12,18 @@ datasource db {
 
 model User {
   id    Int         @id @default(autoincrement())
-  email String      @unique @db.VarChar()
-  fullName String   @db.VarChar()
-  debtList DebtList?
+  username String   @unique @db.VarChar()
+  firstName String   @db.VarChar()
+  balance Int 
+  senders Transaction[] @relation(name: "senders")
+  receivers Transaction[] @relation(name: "receivers")
 }
 
-model DebtList {
-  id    Int         @id @default(autoincrement())
-  description String    @db.VarChar()
-  authorId Int @unique
-  author User @relation(references: [id], fields: [authorId])
-}
-
-model DebtNote {
-  id    Int         @id @default(autoincrement())
-  content String    @db.VarChar()
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model Transaction {
+  id    Int         @id @default(autoincrement()) 
+  fromUser   User @relation("senders", fields: [fromUserId], references: [id])
+  fromUserId Int
+  toUser   User @relation("receivers", fields: [toUserId], references: [id])
+  toUserId Int
+  amount Int
 }
